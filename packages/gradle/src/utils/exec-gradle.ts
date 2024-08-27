@@ -1,9 +1,13 @@
 import { workspaceRoot } from '@nx/devkit';
 import { ExecFileOptions, execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
-export function getGradleBinaryPath(): string {
+/**
+ * This function assume that the gradle binary is in the workspace root
+ * @returns gradle binary path, throws an error if gradlew is not found
+ */
+export function getWorkspaceRootGradleBinaryPath(): string {
   const gradleFile = process.platform.startsWith('win')
     ? 'gradlew.bat'
     : 'gradlew';
@@ -15,22 +19,33 @@ export function getGradleBinaryPath(): string {
   return gradleBinaryPath;
 }
 
+/**
+ * For gradle command, it needs to be run from the directory of the gradle binary
+ * @returns gradle binary file name
+ */
 export function getGradleExecFile(): string {
   return process.platform.startsWith('win') ? '.\\gradlew.bat' : './gradlew';
 }
 
+/**
+ * This function executes gradle with the given arguments
+ * @param gradleBinaryPath absolute path to gradle binary
+ * @param args args passed to gradle
+ * @param execOptions exec options
+ * @returns promise with the stdout buffer
+ */
 export function execGradleAsync(
+  gradleBinaryPath: string,
   args: ReadonlyArray<string>,
   execOptions: ExecFileOptions = {}
 ): Promise<Buffer> {
-  const gradleBinaryPath = getGradleBinaryPath();
-
   return new Promise<Buffer>((res, rej) => {
     const cp = execFile(gradleBinaryPath, args, {
-      ...execOptions,
+      cwd: dirname(gradleBinaryPath),
       shell: true,
       windowsHide: true,
       env: process.env,
+      ...execOptions,
     });
 
     let stdout = Buffer.from('');
