@@ -9,6 +9,7 @@ import { Task, TaskGraph } from '../config/task-graph';
 import { ProjectGraph } from '../config/project-graph';
 import { findAllProjectNodeDependencies } from '../utils/project-graph-utils';
 import { reverse } from '../project-graph/operators';
+import { TaskHistory } from '../utils/task-history';
 
 export interface Batch {
   executorName: string;
@@ -24,12 +25,20 @@ export class TasksSchedule {
   private runningTasks = new Set<string>();
   private completedTasks = new Set<string>();
   private scheduleRequestsExecutionChain = Promise.resolve();
+  private estimatedTaskTimings: Record<string, number>;
 
   constructor(
     private readonly projectGraph: ProjectGraph,
     private readonly taskGraph: TaskGraph,
+    private readonly taskHistory: TaskHistory,
     private readonly options: DefaultTasksRunnerOptions
   ) {}
+
+  public async init() {
+    this.estimatedTaskTimings = await this.taskHistory.getEstimatedTaskTimings(
+      Object.values(this.taskGraph.tasks).map((t) => t.target)
+    );
+  }
 
   public async scheduleNextTasks() {
     this.scheduleRequestsExecutionChain =
@@ -112,12 +121,26 @@ export class TasksSchedule {
         const project1 = this.taskGraph.tasks[taskId1].target.project;
         const project2 = this.taskGraph.tasks[taskId2].target.project;
 
-        return (
-          findAllProjectNodeDependencies(project2, this.reverseProjectGraph)
-            .length -
-          findAllProjectNodeDependencies(project1, this.reverseProjectGraph)
-            .length
-        );
+        const project1NodeDependencies = findAllProjectNodeDependencies(
+          project1,
+          this.reverseProjectGraph
+        ).length;
+        const project2NodeDependencies = findAllProjectNodeDependencies(
+          project2,
+          this.reverseProjectGraph
+        ).length;
+
+        const dependenciesDiff =
+          project2NodeDependencies - project1NodeDependencies;
+
+        if (dependenciesDiff !== 0) {
+          return dependenciesDiff;
+        }
+
+        const task1Timing = this.estimatedTaskTimings[taskId1] ?? 0;
+        const task2Timing = this.estimatedTaskTimings[taskId2] ?? 0;
+
+        return task2Timing - task1Timing;
       });
     this.runningTasks.add(taskId);
   }

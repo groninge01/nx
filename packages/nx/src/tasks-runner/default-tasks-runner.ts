@@ -11,6 +11,7 @@ import { cacheDir } from '../utils/cache-directory';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { CachedResult } from '../native';
+import { getTaskHistory } from '../daemon/server/handle-task-history';
 
 export interface RemoteCache {
   retrieve: (hash: string, cacheDirectory: string) => Promise<boolean>;
@@ -137,7 +138,8 @@ async function runAllTasks(
     options,
     context.nxArgs?.nxBail,
     context.daemon,
-    context.nxArgs?.outputStyle
+    context.nxArgs?.outputStyle,
+    getTaskHistory()
   );
 
   return orchestrator.run();

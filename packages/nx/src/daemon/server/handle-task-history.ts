@@ -1,9 +1,9 @@
-import { TaskRun } from '../../native';
+import { TaskRun, TaskTarget } from '../../native';
 import { TaskHistory } from '../../utils/task-history';
 
 let taskHistory: TaskHistory;
 
-function getTaskHistory() {
+export function getTaskHistory() {
   if (!taskHistory) {
     taskHistory = new TaskHistory();
   }
@@ -25,5 +25,14 @@ export async function handleGetFlakyTasks(hashes: string[]) {
   return {
     response: JSON.stringify(history),
     description: 'handleGetFlakyTasks',
+  };
+}
+
+export async function handleGetEstimatedTaskTimings(targets: TaskTarget[]) {
+  const taskHistory = getTaskHistory();
+  const history = await taskHistory.getEstimatedTaskTimings(targets);
+  return {
+    response: JSON.stringify(history),
+    description: 'handleGetEstimatedTaskTimings',
   };
 }

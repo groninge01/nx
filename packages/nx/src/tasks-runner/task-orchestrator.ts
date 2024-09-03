@@ -31,6 +31,7 @@ import {
 import { workspaceRoot } from '../utils/workspace-root';
 import { output } from '../utils/output';
 import { combineOptionsForExecutor } from '../utils/params';
+import { TaskHistory } from '../utils/task-history';
 
 export class TaskOrchestrator {
   private cache = getCache(this.options);
@@ -39,6 +40,7 @@ export class TaskOrchestrator {
   private tasksSchedule = new TasksSchedule(
     this.projectGraph,
     this.taskGraph,
+    this.taskHistory,
     this.options
   );
 
@@ -71,12 +73,16 @@ export class TaskOrchestrator {
     private readonly options: DefaultTasksRunnerOptions,
     private readonly bail: boolean,
     private readonly daemon: DaemonClient,
-    private readonly outputStyle: string
+    private readonly outputStyle: string,
+    private readonly taskHistory: TaskHistory
   ) {}
 
   async run() {
     // Init the ForkedProcessTaskRunner
-    await this.forkedProcessTaskRunner.init();
+    await Promise.all([
+      this.forkedProcessTaskRunner.init(),
+      this.tasksSchedule.init(),
+    ]);
 
     // initial scheduling
     await this.scheduleNextTasks();
