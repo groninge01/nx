@@ -220,12 +220,12 @@ export function addImportToFlatConfig(
         ts.isObjectBindingPattern(node.declarationList.declarations[0].name) &&
         ts.isCallExpression(node.declarationList.declarations[0].initializer) &&
         node.declarationList.declarations[0].initializer.expression.getText() ===
-          'require' &&
+        'require' &&
         ts.isStringLiteral(
           node.declarationList.declarations[0].initializer.arguments[0]
         ) &&
         node.declarationList.declarations[0].initializer.arguments[0].text ===
-          imp
+        imp
       ) {
         return node.declarationList.declarations[0].name.elements;
       }
@@ -274,12 +274,12 @@ export function addImportToFlatConfig(
         node.declarationList.declarations[0].name.getText() === variable &&
         ts.isCallExpression(node.declarationList.declarations[0].initializer) &&
         node.declarationList.declarations[0].initializer.expression.getText() ===
-          'require' &&
+        'require' &&
         ts.isStringLiteral(
           node.declarationList.declarations[0].initializer.arguments[0]
         ) &&
         node.declarationList.declarations[0].initializer.arguments[0].text ===
-          imp
+        imp
       ) {
         return true;
       }
@@ -295,10 +295,10 @@ export function addImportToFlatConfig(
     typeof variable === 'string'
       ? variable
       : ts.factory.createObjectBindingPattern(
-          variable.map((v) =>
-            ts.factory.createBindingElement(undefined, undefined, v)
-          )
-        ),
+        variable.map((v) =>
+          ts.factory.createBindingElement(undefined, undefined, v)
+        )
+      ),
     imp
   );
   const insert = printer.printNode(
@@ -393,7 +393,7 @@ export function removePlugin(
         node.declarationList.declarations[0].initializer.arguments[0]
       ) &&
       node.declarationList.declarations[0].initializer.arguments[0].text ===
-        pluginImport
+      pluginImport
     ) {
       changes.push({
         type: ChangeType.Delete,
@@ -470,7 +470,7 @@ export function removePlugin(
               ) as ts.PropertyAssignment;
               const removeComma =
                 pluginsObj.properties.indexOf(plugin) <
-                  pluginsObj.properties.length - 1 ||
+                pluginsObj.properties.length - 1 ||
                 pluginsObj.properties.hasTrailingComma;
               changes.push({
                 type: ChangeType.Delete,
@@ -534,7 +534,7 @@ export function removeCompatExtends(
       const callExp = node.expression.expression.expression;
       if (
         ((callExp.expression.getText() === 'compat.config' &&
-          callExp.arguments[0].getText().includes('extends')) ||
+            callExp.arguments[0].getText().includes('extends')) ||
           callExp.expression.getText() === 'compat.extends') &&
         compatExtends.some((ext) =>
           callExp.arguments[0].getText().includes(ext)
@@ -877,8 +877,8 @@ export function generateFlatOverride(
               [
                 ts.factory.createStringLiteral(
                   override['languageOptions']?.['parserOptions']?.parser ??
-                    override['languageOptions']?.parser ??
-                    override.parser
+                  override['languageOptions']?.parser ??
+                  override.parser
                 ),
               ]
             )
